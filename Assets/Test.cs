@@ -4,10 +4,17 @@ using UnityEngine.Rendering.Universal;
 
 public class Test : ScriptableRendererFeature
 {
+    public Material material;
+
     class CustomRenderPass : ScriptableRenderPass
     {
         Material material;
         RenderTexture temp;
+
+        public CustomRenderPass(Material material)
+        {
+            this.material = material;
+        }
 
         // This method is called before executing the render pass.
         // It can be used to configure render targets and their clear state. Also to create temporary render target textures.
@@ -17,7 +24,6 @@ public class Test : ScriptableRendererFeature
         public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
         {
             temp = RenderTexture.GetTemporary(renderingData.cameraData.cameraTargetDescriptor);
-            material = new Material(Shader.Find("Shader Graphs/TestShader"));
         }
 
         // Here you can implement the rendering logic.
@@ -28,8 +34,8 @@ public class Test : ScriptableRendererFeature
         {
             CommandBuffer myCommandBuffer = CommandBufferPool.Get("Test");
             myCommandBuffer.Clear();
-            myCommandBuffer.CopyTexture(renderingData.cameraData.renderer.cameraColorTarget, temp);
-            myCommandBuffer.Blit(temp, renderingData.cameraData.renderer.cameraColorTarget, material, 0);
+            myCommandBuffer.Blit(renderingData.cameraData.renderer.cameraColorTarget, temp, material, 0);
+            myCommandBuffer.CopyTexture(temp, renderingData.cameraData.renderer.cameraColorTarget);
             context.ExecuteCommandBuffer(myCommandBuffer);
             CommandBufferPool.Release(myCommandBuffer);
         }
@@ -46,7 +52,7 @@ public class Test : ScriptableRendererFeature
     /// <inheritdoc/>
     public override void Create()
     {
-        m_ScriptablePass = new CustomRenderPass();
+        m_ScriptablePass = new CustomRenderPass(material);
 
         // Configures where the render pass should be injected.
         m_ScriptablePass.renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
