@@ -32,12 +32,15 @@ public class Test : ScriptableRendererFeature
         // You don't have to call ScriptableRenderContext.submit, the render pipeline will call it at specific points in the pipeline.
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-            CommandBuffer myCommandBuffer = CommandBufferPool.Get("Test");
-            myCommandBuffer.Clear();
-            myCommandBuffer.Blit(renderingData.cameraData.renderer.cameraColorTarget, temp, material, 0);
-            myCommandBuffer.CopyTexture(temp, renderingData.cameraData.renderer.cameraColorTarget);
-            context.ExecuteCommandBuffer(myCommandBuffer);
-            CommandBufferPool.Release(myCommandBuffer);
+            if (renderingData.postProcessingEnabled)
+            {
+                CommandBuffer myCommandBuffer = CommandBufferPool.Get("Outline");
+                myCommandBuffer.Clear();
+                myCommandBuffer.Blit(renderingData.cameraData.renderer.cameraColorTarget, temp, material, 0);
+                myCommandBuffer.CopyTexture(temp, renderingData.cameraData.renderer.cameraColorTarget);
+                context.ExecuteCommandBuffer(myCommandBuffer);
+                CommandBufferPool.Release(myCommandBuffer);
+            }
         }
 
         // Cleanup any allocated resources that were created during the execution of this render pass.
