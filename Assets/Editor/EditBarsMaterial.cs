@@ -8,12 +8,14 @@ using UnityEngine;
 [CanEditMultipleObjects]
 public class EditBarsMaterial : Editor
 {
+    SerializedProperty renderer;
     SerializedProperty colorArray;
     SerializedProperty minArray;
     SerializedProperty maxArray;
 
     private void OnEnable()
     {
+        renderer = serializedObject.FindProperty("renderer");
         colorArray = serializedObject.FindProperty("colors");
         minArray = serializedObject.FindProperty("min");
         maxArray = serializedObject.FindProperty("max");
@@ -22,16 +24,14 @@ public class EditBarsMaterial : Editor
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
+        EditorGUILayout.PropertyField(renderer);
         EditorGUILayout.PropertyField(colorArray);
         EditorGUILayout.PropertyField(minArray);
         EditorGUILayout.PropertyField(maxArray);
         if (serializedObject.hasModifiedProperties)
         {
             serializedObject.ApplyModifiedProperties();
-            foreach (var target in serializedObject.targetObjects)
-            {
-                (target as SetBarsMaterial).SetMaterial();
-            }
+            EditorApplication.delayCall += MaterialUpdater.UpdateSetMaterials;
         }
     }
 }
